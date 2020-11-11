@@ -2,7 +2,7 @@ This package is for creating a wide residual convolutional neural network with k
 
 This architecture was first introduced in the paper on https://arxiv.org/abs/1605.07146 .
 
-For istallation: TODO
+For istallation: Run "pip install Wide-Residual-Network".The package is uploaded to PyPI and can be found on https://pypi.org/project/Wide-Residual-Network/0.2/ .  
 
 Please first install tensorflow in order to be able to use this package.
 
