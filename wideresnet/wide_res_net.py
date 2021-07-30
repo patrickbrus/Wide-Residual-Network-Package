@@ -5,7 +5,7 @@ import tensorflow as tf
 from tensorflow import keras
 
 class WideResNet():
-    def __init__(self, input_shape, k = 2, num_layers = 22, num_classes = 4):
+    def __init__(self, input_shape, k = 2, num_layers = 22, num_classes = 4, activation_func = "softmax"):
         '''
         creates the final keras network
         
@@ -14,6 +14,7 @@ class WideResNet():
             k (integer) : widening factor
             num_layers (integer) : number of layers within the set {10, 16, 22, 28, 34, 40}
             num_classes (integer) : number of classes to classify
+            activation_func (string) : name of activation function to use on output layer
         '''
         try:
             img_height, img_width, img_depth = input_shape
@@ -24,6 +25,7 @@ class WideResNet():
         self.__k = k
         self.__num_layers = num_layers
         self.__num_classes = num_classes
+        self.__activation_func = activation_func
         
     def create_model(self):
         '''
@@ -47,7 +49,7 @@ class WideResNet():
         # add conv4 group -> stride equals 2 because output size shall be halve the input size
         X = self.add_basic_block(X, 64, self.__k, num_blocks = num_blocks_per_group, stride = (2, 2), group_name = "4")
         # add final output layer
-        X = self.add_output_block(X, self.__num_classes)
+        X = self.add_output_block(X, self.__num_classes, activation_func=self.__activation_func)
 
         model = keras.Model(inputs = X_input, outputs = X)
         return model
@@ -116,7 +118,7 @@ class WideResNet():
                 X = keras.layers.Add(name = block_prefix + str(num_block) + "_add")([X_block, X])
         return X
 
-    def add_output_block(self, X, num_classes):
+    def add_output_block(self, X, num_classes, activation_func="softmax"):
         '''
         this function adds the output block of the network. It doesn't add additional dense layers, because later we want to 
         compute the class activation maps.
@@ -124,6 +126,7 @@ class WideResNet():
         Args:
             X (tensorflow tensor) : tensor output from last convolutional layer
             num_classes (integer) : number of classes to classify
+            activation_func (string) : name of activation function to use on output layer
 
         Returns:
             predictions (tensorflow tensor) : keras tensor with new added block
@@ -134,7 +137,6 @@ class WideResNet():
         X = keras.layers.Flatten()(X)
 
         # and a fully connected output/classification layer
-        # use the sigmoid function, because we want to use multilabel classification -> proabilities shouldn't depent on each other
-        predictions = keras.layers.Dense(num_classes, activation='sigmoid')(X)
+        predictions = keras.layers.Dense(num_classes, activation=activation_func)(X)
         
         return predictions
